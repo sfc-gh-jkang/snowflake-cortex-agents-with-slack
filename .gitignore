@@ -1,0 +1,32 @@
+# Python
+.venv/
+env*/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment variables
+.env
+.env.local
+
+# Slack CLI
+.slack/
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+pie_chart.jpg
+*.png
+*.jpg
+*.jpeg
+*.gif

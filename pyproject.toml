@@ -1,0 +1,29 @@
+[project]
+name = "snowflake-cortex-slack-bot"
+version = "1.0.0"
+description = "A Slack bot powered by Snowflake Cortex Agents for intelligent data analysis and support"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "John Kang", email = "john.kang@snowflake.com"}
+]
+keywords = ["snowflake", "cortex", "slack", "ai", "chatbot", "agent"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Communications :: Chat",
+]
+dependencies = [
+    "matplotlib>=3.10.6",
+    "numpy>=2.3.3",
+    "pandas>=2.3.3",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.5",
+    "slack-bolt>=1.25.0",
+    "slack-cli-hooks>=0.1.0",
+    "snowflake>=1.8.0",
+    "snowflake-snowpark-python>=1.39.1",
+]
