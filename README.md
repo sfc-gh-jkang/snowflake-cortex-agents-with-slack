@@ -166,20 +166,37 @@ Follow the [Snowflake setup instructions](https://quickstarts.snowflake.com/guid
    -- This parses PDFs and creates semantic search index
    ```
 
-4. **Create Cortex Agent** in Snowsight:
+4. **(Optional) Setup Web Scraping Capability**:
+   
+   Enable your agent to scrape and analyze web content in real-time:
+   
+   ```sql
+   -- Execute web_scrape_setup.sql in Snowsight
+   -- This creates external access integration and web_scrape function
+   ```
+   
+   This allows the agent to:
+   - Access and scrape any public website
+   - Extract and analyze web content
+   - Answer questions about current web information
+   
+   Based on [Snowflake AI Demo web scraping implementation](https://github.com/NickAkincilar/Snowflake_AI_DEMO/blob/main/sql_scripts/demo_setup.sql).
+
+5. **Create Cortex Agent** in Snowsight:
    - Navigate to **AI & ML** → **Agents**
    - Click **Create agent** with schema `SNOWFLAKE_INTELLIGENCE.AGENTS`
    - Configure agent with:
      - **Cortex Analyst** tool (uses `support_tickets_semantic_model.yaml` for SQL generation)
      - **Cortex Search** tool (searches parsed PDF documents)
+     - **Function Tool** (optional): Add `web_scrape(VARCHAR)` function for real-time web content analysis
    - See the [quickstart guide](https://quickstarts.snowflake.com/guide/integrate_snowflake_cortex_agents_with_slack/index.html#4) for detailed instructions
 
-5. **Generate Personal Access Token (PAT)**:
+6. **Generate Personal Access Token (PAT)**:
    - In Snowsight, go to your user profile
    - Generate PAT for `SNOWFLAKE_INTELLIGENCE_ADMIN` role
    - Save this token for the `.env` file
 
-### 5. Setup Environment Variables
+### 7. Setup Environment Variables
 
 Copy the example environment file and configure with your credentials:
 
@@ -216,7 +233,7 @@ CORTEX_AGENT_NAME=your-agent-name
 
 **Note**: Never commit your `.env` file to git. It's already in `.gitignore`.
 
-### 6. Test Snowflake Connection (Optional but Recommended)
+### 8. Test Snowflake Connection (Optional but Recommended)
 
 Before running the bot, verify your Snowflake connection is working:
 
@@ -236,7 +253,7 @@ This will:
 
 If the test succeeds, you're ready to run the bot!
 
-### 7. Start the Bot
+### 9. Start the Bot
 
 ```bash
 # Make sure virtual environment is activated
@@ -259,6 +276,7 @@ first-bolt-app/
 ├── test.py                                   # Connection test script for Snowflake/Cortex verification
 ├── setup.sql                                 # Snowflake setup script
 ├── cortex_search_service.sql                 # Cortex Search Service configuration
+├── web_scrape_setup.sql                      # Web scraping function setup (optional)
 ├── support_tickets_semantic_model.yaml       # Cortex Analyst semantic model definition
 ├── data/                                     # Sample data and documents
 │   ├── *.pdf                                 # Sample PDF documents for Cortex Search
@@ -282,10 +300,24 @@ first-bolt-app/
 
 ### Example Queries
 
+**Data Analysis:**
 ```
 What are our top sales regions this quarter?
 Show me customer support tickets from last week
-Explain Snowflake's security features
+How many unique customers have raised a support ticket with Cellular service?
+```
+
+**Document Search:**
+```
+What are the payment terms for Snowtires?
+What's the latest tire recycling policy?
+```
+
+**Web Scraping (if enabled):**
+```
+What's on the homepage of https://www.snowflake.com?
+Analyze the content at https://www.example.com and summarize it
+What information can you find about product X on their website?
 ```
 
 ## Features
@@ -297,6 +329,7 @@ Explain Snowflake's security features
 - ✅ Bot loop prevention
 - ✅ Error handling with detailed feedback
 - ✅ Cortex Search integration for documentation queries
+- ✅ Optional web scraping capability for real-time web content analysis
 
 ## Troubleshooting
 
