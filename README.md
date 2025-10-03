@@ -155,21 +155,26 @@ Follow the [Snowflake setup instructions](https://quickstarts.snowflake.com/guid
    -- This creates DASH_AGENT_SLACK database and loads sample data
    ```
 
-2. **Create Cortex Search Service** (optional):
+2. **Upload semantic model and PDF documents**:
+   - Upload `support_tickets_semantic_model.yaml` to `DASH_AGENT_SLACK.DATA.SEMANTIC_MODELS` stage
+   - Upload PDF files from `data/` folder to `DASH_AGENT_SLACK.DATA.PDFS` stage
+   - These files enable Cortex Analyst and Cortex Search capabilities
+
+3. **Create Cortex Search Service**:
    ```sql
    -- Execute cortex_search_service.sql in Snowsight
-   -- This enables semantic search over documents
+   -- This parses PDFs and creates semantic search index
    ```
 
-3. **Create Cortex Agent** in Snowsight:
+4. **Create Cortex Agent** in Snowsight:
    - Navigate to **AI & ML** → **Agents**
    - Click **Create agent** with schema `SNOWFLAKE_INTELLIGENCE.AGENTS`
    - Configure agent with:
-     - **Cortex Analyst** tool (for SQL generation)
-     - **Cortex Search** tool (for document search)
+     - **Cortex Analyst** tool (uses `support_tickets_semantic_model.yaml` for SQL generation)
+     - **Cortex Search** tool (searches parsed PDF documents)
    - See the [quickstart guide](https://quickstarts.snowflake.com/guide/integrate_snowflake_cortex_agents_with_slack/index.html#4) for detailed instructions
 
-4. **Generate Personal Access Token (PAT)**:
+5. **Generate Personal Access Token (PAT)**:
    - In Snowsight, go to your user profile
    - Generate PAT for `SNOWFLAKE_INTELLIGENCE_ADMIN` role
    - Save this token for the `.env` file
@@ -248,19 +253,23 @@ python app.py
 
 ```
 first-bolt-app/
-├── app.py                      # Main Slack bot application with enhanced message handling
-├── cortex_chat.py              # Snowflake Cortex Agent interaction logic
-├── cortex_response_parser.py   # Parse and format Cortex responses
-├── test.py                     # Connection test script for Snowflake/Cortex verification
-├── setup.sql                   # Snowflake setup script
-├── cortex_search_service.sql   # Cortex Search Service configuration (optional)
-├── slack_bot.sh                # Shell script to start the bot
-├── manifest.json               # Slack app configuration manifest
-├── pyproject.toml              # Project metadata and dependencies
-├── uv.lock                     # Dependency lock file (managed by uv)
-├── .env.example                # Environment variable template
-├── .env                        # Your actual environment variables (not tracked in git)
-└── README.md                   # This file
+├── app.py                                    # Main Slack bot application with enhanced message handling
+├── cortex_chat.py                            # Snowflake Cortex Agent interaction logic
+├── cortex_response_parser.py                 # Parse and format Cortex responses
+├── test.py                                   # Connection test script for Snowflake/Cortex verification
+├── setup.sql                                 # Snowflake setup script
+├── cortex_search_service.sql                 # Cortex Search Service configuration
+├── support_tickets_semantic_model.yaml       # Cortex Analyst semantic model definition
+├── data/                                     # Sample data and documents
+│   ├── *.pdf                                 # Sample PDF documents for Cortex Search
+│   └── ...                                   # Contract and policy documents
+├── slack_bot.sh                              # Shell script to start the bot
+├── manifest.json                             # Slack app configuration manifest
+├── pyproject.toml                            # Project metadata and dependencies
+├── uv.lock                                   # Dependency lock file (managed by uv)
+├── .env.example                              # Environment variable template
+├── .env                                      # Your actual environment variables (not tracked in git)
+└── README.md                                 # This file
 ```
 
 ## Usage
