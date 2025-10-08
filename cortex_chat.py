@@ -10,10 +10,12 @@ class CortexChat:
             agent_url: str, 
             pat: str,
             slack_say_function=None,
-            slack_app=None
+            slack_app=None,
+            use_oauth=False
         ):
         self.agent_url = agent_url
         self.pat = pat
+        self.use_oauth = use_oauth
         self.parser = CortexResponseParser(debug=DEBUG)
         self.slack_say = slack_say_function  # For real-time Slack updates
         self.slack_app = slack_app  # For updating messages
@@ -39,12 +41,21 @@ class CortexChat:
             "stream": True  # Enable streaming as expected by the API
         }
 
-        headers = {
-            "X-Snowflake-Authorization-Token-Type": "PROGRAMMATIC_ACCESS_TOKEN",
-            "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
+        # Set headers based on authentication type
+        if self.use_oauth:
+            headers = {
+                "X-Snowflake-Authorization-Token-Type": "OAUTH",
+                "Authorization": f"Bearer {self.pat}",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        else:
+            headers = {
+                "X-Snowflake-Authorization-Token-Type": "PROGRAMMATIC_ACCESS_TOKEN",
+                "Authorization": f"Bearer {self.pat}",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
         
         # Debug: Print the request details
         if DEBUG:

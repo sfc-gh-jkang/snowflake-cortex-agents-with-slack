@@ -1,0 +1,15 @@
+spec:
+  containers:
+    - name: cortex-slack-bot
+      image: /cortex_slack_bot_db/image_schema/image_repo/cortex-slack-bot:latest
+      resources:
+        requests:
+          memory: 2Gi
+          cpu: 1
+        limits:
+          memory: 4Gi
+          cpu: 2
+  endpoints:
+    - name: health
+      port: 3000
+      public: false

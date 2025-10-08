@@ -6,16 +6,28 @@ __pycache__/
 *$py.class
 *.so
 .Python
+*.egg-info/
+dist/
+build/
 
 # Environment variables
 .env
 .env.local
+.env.*.local
+*.env
 
 # Slack CLI
 .slack/
 
+# Docker
+*.log
+docker-compose.override.yml
+
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 
 # Editors
 .vscode/
@@ -24,9 +36,25 @@ __pycache__/
 *.swo
 *~
 
+# Snowflake
+# Don't commit credentials - use templates only
+spcs-env.yaml
+
 # Project specific
 pie_chart.jpg
 *.png
 *.jpg
 *.jpeg
 *.gif
+
+# Build artifacts
+*.tar
+*.tar.gz
+*.zip
+
+# Local development files
+.history/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/

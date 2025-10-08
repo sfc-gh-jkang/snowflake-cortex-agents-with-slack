@@ -1,0 +1,34 @@
+# SPCS Environment Variables Template
+# Copy this file to spcs-env.yaml and fill in your actual values
+# DO NOT commit spcs-env.yaml to git!
+
+spec:
+  containers:
+    - name: cortex-slack-bot
+      image: /cortex_slack_bot_db/image_schema/image_repo/cortex-slack-bot:latest
+      env:
+        # Slack Configuration
+        SLACK_BOT_TOKEN: 'xoxb-your-bot-token-here'
+        SLACK_APP_TOKEN: 'xapp-your-app-token-here'
+        
+        # Snowflake Configuration (optional - for backward compatibility)
+        # ACCOUNT: 'YOUR-ACCOUNT-IDENTIFIER'
+        # HOST: 'your-account.snowflakecomputing.com'
+        DEMO_USER: 'your-username'
+        DEMO_USER_ROLE: 'snowflake_intelligence_admin'
+        WAREHOUSE: 'CORTEX_SLACK_BOT_WH'
+        
+        # Cortex Agent Configuration
+        AGENT_ENDPOINT: 'https://your-account.snowflakecomputing.com/api/v2/databases/snowflake_intelligence/schemas/agents/agents/your-agent-name:run'
+        PAT: 'your-personal-access-token'
+      resources:
+        requests:
+          memory: 2Gi
+          cpu: 1
+        limits:
+          memory: 4Gi
+          cpu: 2
+  endpoints:
+    - name: health
+      port: 3000
+      public: false

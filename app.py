@@ -11,13 +11,22 @@ License: Apache-2.0
 from typing import Any
 import os
 import re
+import logging
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import snowflake.connector
 from snowflake.core import Root
 from dotenv import load_dotenv
-from snowflake.snowpark import Session
+import snowflake.connector 
+from snowflake.snowpark.session import Session
 import cortex_chat
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -30,6 +39,9 @@ SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 AGENT_ENDPOINT = os.getenv("AGENT_ENDPOINT")
 PAT = os.getenv("PAT")
+
+# Default warehouse for SPCS deployment (fallback if WAREHOUSE not set)
+DEFAULT_SPCS_WAREHOUSE = os.getenv("DEFAULT_SPCS_WAREHOUSE", "CORTEX_SLACK_BOT_WH")
 
 DEBUG = False  # Set to True for detailed logging during development
 
@@ -135,7 +147,7 @@ def handle_message_event(event, say, client, body):
         
     except Exception as e:
         error_info = f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
-        print(f"❌ Error in handle_message_event: {error_info}")
+        logger.error(f"Error in handle_message_event: {error_info}")
         say(f"❌ Sorry, there was an error processing your message: {str(e)}")
 
 @app.action("show_planning_details")
@@ -379,7 +391,7 @@ def handle_planning_details_toggle(ack, body, say):
         )
         
     except Exception as e:
-        print(f"Error handling planning details toggle: {e}")
+        logger.error(f"Error handling planning details toggle: {e}")
         # Fallback message
         say(f"❌ Error toggling planning details: {e}")
 
@@ -438,7 +450,7 @@ def handle_message_events(ack, body, say):
         
     except Exception as e:
         error_info = f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
-        print(f"❌ Error in message handler: {error_info}")
+        logger.error(f"Error in message handler: {error_info}")
         say(
             text="❌ Request failed",
             blocks=[
@@ -510,7 +522,7 @@ def format_text_for_slack(text):
         return text
         
     except Exception as e:
-        print(f"❌ Error formatting text: {e}")
+        logger.error(f"Error formatting text: {e}")
         return text
 
 def format_dataframe_for_slack(df):
@@ -529,7 +541,7 @@ def format_dataframe_for_slack(df):
         return table_str
     
     except Exception as e:
-        print(f"❌ Error formatting DataFrame: {e}")
+        logger.error(f"Error formatting DataFrame: {e}")
         return "Error formatting data for display"
 
 def display_agent_response(content, say):
@@ -596,7 +608,7 @@ def display_agent_response(content, say):
             
     except Exception as e:
         error_info = f"{type(e).__name__} at line {e.__traceback__.tb_lineno} of {__file__}: {e}"
-        print(f"❌ Error in display_agent_response: {error_info}")
+        logger.error(f"Error in display_agent_response: {error_info}")
         say(
             text="❌ Display error",
             blocks=[{
@@ -608,55 +620,140 @@ def display_agent_response(content, say):
             }]
         )
 
+def is_running_in_spcs():
+    """
+    Detect if running in Snowpark Container Services.
+    
+    When running in SPCS, Snowflake automatically provides an OAuth token
+    at /snowflake/session/token that can be used for authentication.
+    """
+    import os.path
+    return os.path.exists('/snowflake/session/token')
+
+
+def get_oauth_token():
+    """Get the OAuth token for the Snowpark Session."""
+    with open('/snowflake/session/token', 'r') as f:
+        return f.read()
+
 def get_snowflake_connection():
-    """Create Snowflake connection using PAT authentication."""
+    """Create Snowflake connection using appropriate authentication method."""
     try:
-        print("🔗 Attempting Snowflake connection with PAT authentication...")
+        # Detect environment
+        running_in_spcs = is_running_in_spcs()
         
         # Get account from host if not set
         account = ACCOUNT
         if not account:
             if HOST:
                 account = HOST.split('.')[0]
-                print(f"   📋 Extracted account from host: {account}")
+                logger.info(f"Extracted account from host: {account}")
         
-        # Try PAT authentication first
-        try:
-            conn = snowflake.connector.connect(
-                user=USER,
-                password=PAT,
-                account=account,
-                warehouse=WAREHOUSE,
-                role=ROLE
-            )
+        if running_in_spcs:
+            # Running in SPCS - use OAuth token with Session.builder
+            logger.info("Running in SPCS - using OAuth token authentication with Session.builder")
             
-            # Test connection
-            cursor = conn.cursor()
-            cursor.execute("SELECT CURRENT_VERSION()")
-            result = cursor.fetchone()
-            cursor.close()
+            try:
+                # Read OAuth token from the file provided by Snowflake
+                oauth_token = get_oauth_token()
+
+                logger.info("Creating Snowpark session with SPCS OAuth token")
+                # Build connection parameters for SPCS
+                # Reference: https://github.com/sfc-gh-jkang/cortex-cost-app-spcs/blob/main/snowflake/snowflake_utils.py
+                # For SPCS OAuth: Need account but NOT host (host is derived from account)
+                creds = {
+                    'host': os.getenv('SNOWFLAKE_HOST'),
+                    'port': os.getenv('SNOWFLAKE_PORT'),
+                    'protocol': "https",
+                    'account': os.getenv('SNOWFLAKE_ACCOUNT'),
+                    'authenticator': "oauth",
+                    'token': oauth_token,
+                    'warehouse': os.getenv('SNOWFLAKE_WAREHOUSE'),
+                    'database': os.getenv('SNOWFLAKE_DATABASE'),
+                    'schema': os.getenv('SNOWFLAKE_SCHEMA'),
+                    'client_session_keep_alive': True
+                }
+
+                connection = snowflake.connector.connect(**creds)
+
+                session = Session.builder.configs({"connection": connection}).create()
+                logger.info("Successfully connected to Snowflake via SPCS token authentication")
+                # Get the underlying connection from the session
+                conn = session._conn._conn
+                
+                # Test connection and get current context
+                result = session.sql("SELECT CURRENT_VERSION(), CURRENT_ROLE(), CURRENT_ACCOUNT(), CURRENT_WAREHOUSE()").collect()[0]
+                
+                logger.info(f"Snowflake version: {result[0]}")
+                logger.info(f"Using role: {result[1]}")
+                logger.info(f"Account: {result[2]}")
+                logger.info(f"Warehouse: {result[3]}")
+                return conn
+                
+            except Exception as oauth_error:
+                logger.error(f"OAuth authentication failed: {oauth_error}")
+                return None
+        else:
+            # Running locally - use PAT authentication
+            logger.info("Running locally - using PAT authentication")
             
-            print(f"   ✅ PAT authentication successful! Snowflake version: {result[0]}")
-            return conn
-            
-        except Exception as pat_error:
-            print(f"   ❌ PAT authentication failed: {pat_error}")
-            return None
+            try:
+                conn = snowflake.connector.connect(
+                    user=USER,
+                    password=PAT,
+                    account=account,
+                    warehouse=WAREHOUSE,
+                    role=ROLE
+                )
+                
+                # Test connection
+                cursor = conn.cursor()
+                cursor.execute("SELECT CURRENT_VERSION()")
+                result = cursor.fetchone()
+                cursor.close()
+                
+                logger.info(f"PAT authentication successful! Snowflake version: {result[0]}")
+                return conn
+                
+            except Exception as pat_error:
+                logger.error(f"PAT authentication failed: {pat_error}")
+                return None
                 
     except Exception as e:
-        print(f"   ❌ Failed to connect to Snowflake: {e}")
+        logger.error(f"Failed to connect to Snowflake: {e}")
         return None
 
 def init():
     """Initialize Snowflake connection and Cortex chat."""
     conn = get_snowflake_connection()
 
+    # Determine authentication token for Cortex API calls
+    # NOTE: SPCS OAuth tokens are ONLY for internal Snowflake connections (Snowpark Session)
+    #       For Cortex Agent REST API calls, we must use PAT even when running in SPCS
+    running_in_spcs = is_running_in_spcs()
+    
+    # if running_in_spcs:
+    #     logger.info("Running in SPCS - Using oauth token for Cortex Agent API calls")
+    # else:
+    #     logger.info("Running locally - Using PAT for Cortex API calls")
+    
+    # if running_in_spcs:
+    #     auth_token = get_oauth_token()
+    #     use_oauth = True
+    # else:
+    #     auth_token = PAT
+    #     use_oauth = False
+    # Only use PAT for Cortex API calls
+    auth_token = PAT
+    use_oauth = False
+
     cortex_app = cortex_chat.CortexChat(
         AGENT_ENDPOINT, 
-        PAT
+        auth_token,
+        use_oauth=use_oauth
     )
 
-    print("🚀 Initialization complete")
+    logger.info("Initialization complete")
     return conn, cortex_app
 
 # Start app

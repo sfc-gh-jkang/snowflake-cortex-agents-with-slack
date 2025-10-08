@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+LICENSE
+*.md
+
+# Scripts
+deploy.sh
+test-local-container.sh
+slack_bot.sh
+
+# SQL files (not needed in container)
+setup.sql
+cortex_search_service.sql
+web_scrape_setup.sql
+spcs_setup.sql
+
+# Test files
+test.py
+test/
+
+# Lock files (already handled by uv in Dockerfile)
+# Keep pyproject.toml and uv.lock for build stage
+
+# Snowflake SPCS files
+spec.yaml
+
+# Data files (if large, upload separately to SPCS stage)
+# data/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
