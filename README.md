@@ -1,5 +1,8 @@
 # Snowflake Cortex Agents with Slack Integration ❄️
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+
 > A Slack bot powered by Snowflake Cortex Agents that provides intelligent responses using natural language processing and real-time data analysis. Deploy locally, in Docker, or in Snowpark Container Services.
 
 ## 🚀 Quick Start
@@ -876,6 +879,20 @@ Issues and questions? Feel free to:
 2. Reference the [original Snowflake quickstart](https://github.com/Snowflake-Labs/sfguide-integrate-snowflake-cortex-agents-with-slack)
 3. Check [Slack Bolt Python issues](https://github.com/slackapi/bolt-python/issues)
 
-## License
+## 📄 License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+Copyright 2025 Snowflake Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+See the [LICENSE](LICENSE) file for the full license text.
