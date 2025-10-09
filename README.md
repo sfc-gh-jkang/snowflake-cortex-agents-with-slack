@@ -51,11 +51,11 @@ The `app.py` has been updated to handle both regular messages and edited message
 @app.event("message")
 def handle_message_events(ack, body, say):
     event = body.get('event', {})
-    
+
     # Skip bot messages to avoid loops
     if event.get('bot_id') or event.get('subtype') == 'bot_message':
         return
-    
+
     # Handle different message subtypes
     if event.get('subtype') == 'message_changed':
         # For edited messages, get text from message object
@@ -90,7 +90,7 @@ Enhanced authentication for seamless SPCS deployment:
 
 - **Automatic Environment Detection**: Detects SPCS environment via `/snowflake/session/token`
 - **OAuth Token Support**: Uses Snowflake-provided OAuth tokens when running in SPCS
-- **Dual Authentication**: 
+- **Dual Authentication**:
   - Local development: PAT authentication
   - SPCS production: OAuth token authentication
 - **No Role Configuration Required**: OAuth connections work without explicit role specification
@@ -118,19 +118,23 @@ This application can be deployed in three ways:
 ## Prerequisites
 
 ### Common Requirements
+
 - Slack workspace with admin access
 - Snowflake account with Cortex enabled
 - Snowflake Cortex Agent configured (see setup below)
 
 ### For Local Development
+
 - Python 3.13+
 - [uv](https://github.com/astral-sh/uv) package manager
 
 ### For Docker Deployment
+
 - Docker Desktop or Docker Engine
 - [uv](https://github.com/astral-sh/uv) package manager (for building)
 
 ### For SPCS Deployment
+
 - Docker Desktop or Docker Engine
 - [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index) (`snow` command)
 - Snowflake account with SPCS enabled
@@ -173,26 +177,30 @@ You can set up your Slack app using either the **Slack CLI** (recommended) or ma
 Follow the [official Bolt for Python quickstart guide](https://docs.slack.dev/tools/bolt-python/getting-started/) for the smoothest setup experience.
 
 1. **Install Slack CLI** (if not already installed):
+
    ```bash
    # macOS & Linux
    curl -fsSL https://downloads.slack-edge.com/slack-cli/install.sh | bash
-   
+
    # Windows - download from Slack
    ```
 
 2. **Authenticate with Slack**:
+
    ```bash
    slack login
    ```
 
 3. **Create/configure the app** using the included `manifest.json`:
+
    ```bash
    slack run
    ```
-   
+
    Select "Create a new app" when prompted and choose your workspace.
 
 The Slack CLI will automatically:
+
 - Create the app with proper scopes and settings
 - Generate app tokens
 - Set up Socket Mode
@@ -227,6 +235,7 @@ Follow the [Snowflake setup instructions](https://quickstarts.snowflake.com/guid
 **Quick Setup:**
 
 1. **Run setup SQL** to create database, schema, tables, and load data:
+
    ```sql
    -- Execute setup.sql in Snowsight
    -- This creates DASH_AGENT_SLACK database and loads sample data
@@ -238,28 +247,29 @@ Follow the [Snowflake setup instructions](https://quickstarts.snowflake.com/guid
    - These files enable Cortex Analyst and Cortex Search capabilities
 
 3. **Create Cortex Search Service**:
+
    ```sql
    -- Execute cortex_search_service.sql in Snowsight
    -- This parses PDFs and creates semantic search index
    ```
 
 4. **(Optional) Setup Web Scraping Capability**:
-   
+
    Enable your agent to scrape and analyze web content in real-time:
-   
+
    ```sql
    -- Execute web_scrape_setup.sql in Snowsight
    -- This creates external access integration and web_scrape function
    ```
-   
+
    This allows the agent to:
    - Access and scrape any public website
    - Extract and analyze web content
    - Answer questions about current web information
-   
+
    Based on [Snowflake AI Demo web scraping implementation](https://github.com/NickAkincilar/Snowflake_AI_DEMO/blob/main/sql_scripts/demo_setup.sql).
 
-5. **Create Cortex Agent** in Snowsight:
+1. **Create Cortex Agent** in Snowsight:
    - Navigate to **AI & ML** → **Agents**
    - Click **Create agent** with schema `SNOWFLAKE_INTELLIGENCE.AGENTS`
    - Configure agent with:
@@ -268,7 +278,7 @@ Follow the [Snowflake setup instructions](https://quickstarts.snowflake.com/guid
      - **Function Tool** (optional): Add `web_scrape(VARCHAR)` function for real-time web content analysis
    - See the [quickstart guide](https://quickstarts.snowflake.com/guide/integrate_snowflake_cortex_agents_with_slack/index.html#4) for detailed instructions
 
-6. **Generate Personal Access Token (PAT)**:
+2. **Generate Personal Access Token (PAT)**:
    - In Snowsight, go to your user profile
    - Generate PAT for `SNOWFLAKE_INTELLIGENCE_ADMIN` role
    - Save this token for the `.env` file
@@ -326,6 +336,7 @@ python test.py
 ```
 
 This will:
+
 - ✅ Test authentication with your Snowflake account
 - ✅ Verify the Cortex Agent endpoint is accessible
 - ✅ Show raw API responses and planning steps
@@ -401,18 +412,20 @@ Deploy the bot to run inside your Snowflake account using Snowpark Container Ser
 ### Prerequisites for SPCS
 
 1. **Install Snowflake CLI**:
+
    ```bash
    pip install snowflake-cli-labs
-   
+
    # Verify installation
    snow --version
    ```
 
 2. **Configure Snowflake CLI Connection**:
+
    ```bash
    # Create a new connection
    snow connection add
-   
+
    # Or test existing connection
    snow connection test --connection your-connection-name
    ```
@@ -434,6 +447,7 @@ Execute the setup SQL in Snowsight to create the infrastructure:
 ```
 
 Open Snowsight and run the contents of `spcs_setup.sql`. This will:
+
 - Create `CORTEX_SLACK_BOT_DB` database
 - Set up image repository for Docker images
 - Create compute pool for running the service
@@ -457,7 +471,8 @@ cp spcs-env-template.yaml spcs-env.yaml
 
 **Note**: `spcs-env.yaml` is gitignored and won't be committed to version control.
 
-**⚠️ Important - Hostname Format**: 
+**⚠️ Important - Hostname Format**:
+
 - **Account identifier** (e.g., `SNOWFLAKE_ACCOUNT`): Keep as-is with underscores if present (e.g., `ORG-ACCOUNT_REGION`)
 - **Hostname** (e.g., `SNOWFLAKE_HOST`, `HOST`, URLs): Must use **lowercase and hyphens** (e.g., `org-account-region.snowflakecomputing.com`)
 - Example: Account `MYORG-ACCOUNT_US_EAST_1` → Host `myorg-account-us-east-1.snowflakecomputing.com`
@@ -516,15 +531,18 @@ Use the deployment script for automated deployment:
 ```
 
 **Note**: The script automatically detects and uses your default Snowflake CLI connection (`is_default=True`). Make sure your default connection:
+
 - Uses `SNOWFLAKE_INTELLIGENCE_ADMIN` role (or has equivalent privileges from `spcs_setup.sql` STEP 8)
 - Has access to create and manage SPCS services
 
 **Warehouse Configuration**: The application uses the following priority for warehouse selection:
+
 1. `WAREHOUSE` environment variable (if set in `spcs-env.yaml`)
 2. `SNOWFLAKE_WAREHOUSE` environment variable (if set)
 3. `DEFAULT_SPCS_WAREHOUSE` environment variable (defaults to `CORTEX_SLACK_BOT_WH` if not set)
 
 The script will:
+
 1. ✅ Build Docker image for linux/amd64
 2. ✅ Authenticate with Snowflake registry using `snow spcs image-registry login`
 3. ✅ Push image to Snowflake registry
@@ -566,6 +584,7 @@ snow sql -q "ALTER SERVICE CORTEX_SLACK_BOT_DB.APP_SCHEMA.CORTEX_SLACK_BOT_SERVI
 #### 6. SPCS Troubleshooting
 
 **Service won't start:**
+
 ```bash
 # Check compute pool status
 snow sql -q "SHOW COMPUTE POOLS;" --connection your-connection
@@ -578,6 +597,7 @@ snow sql -q "SELECT SYSTEM\$GET_SERVICE_LOGS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.COR
 ```
 
 **Slack not connecting - "not_allowed_token_type" error:**
+
 - **Check if tokens are swapped** in `spcs-env.yaml`:
   - `SLACK_BOT_TOKEN` should start with `xoxb-` (Bot User OAuth Token)
   - `SLACK_APP_TOKEN` should start with `xapp-` (App-Level Token for Socket Mode)
@@ -585,11 +605,13 @@ snow sql -q "SELECT SYSTEM\$GET_SERVICE_LOGS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.COR
 - Check network rules include `slack.com:443`, `api.slack.com:443`, `wss-primary.slack.com:443`
 
 **OAuth authentication failures - Role errors:**
+
 - **Don't specify role in environment variables for SPCS** - OAuth tokens have roles pre-assigned
 - The service will use the role associated with the OAuth token (typically `ACCOUNTADMIN` or the service owner's role)
 - Check service logs to see which role is being used: `"Using role: <role_name>"`
 
 **Cortex Agent authentication errors:**
+
 - **"Programmatic access token is invalid"**: Check that PAT is set correctly in `spcs-env.yaml`
 - **SPCS OAuth tokens CANNOT be used for Cortex Agent REST APIs** - must use PAT
 - Verify PAT has not expired (regenerate in Snowsight if needed)
@@ -597,6 +619,7 @@ snow sql -q "SELECT SYSTEM\$GET_SERVICE_LOGS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.COR
 - Logs should show: `"Running in SPCS - Using PAT for Cortex Agent API calls"`
 
 **General authentication issues:**
+
 - **Local environment**: Uses PAT for both Snowflake connections and Cortex Agent API
 - **SPCS environment**: Uses DUAL authentication:
   - OAuth token (from `/snowflake/session/token`) for Snowflake connections
@@ -606,6 +629,7 @@ snow sql -q "SELECT SYSTEM\$GET_SERVICE_LOGS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.COR
 - PAT must be manually regenerated when expired
 
 **DNS/Connection errors - "Failed to resolve hostname":**
+
 - **Hostname must use lowercase and hyphens** (not underscores)
 - Convert account identifier underscores to hyphens in hostnames
 - Example: `ORG-ACCOUNT_US_EAST_1` → `org-account-us-east-1.snowflakecomputing.com`
@@ -642,7 +666,7 @@ snow sql -q "SHOW IMAGES IN IMAGE REPOSITORY CORTEX_SLACK_BOT_DB.IMAGE_SCHEMA.IM
 ## 🔄 Deployment Comparison
 
 | Feature | Local Development | Docker Local | SPCS |
-|---------|------------------|--------------|------|
+| ---------|------------------|--------------|------ |
 | **Setup Time** | 5 minutes | 10 minutes | 20 minutes |
 | **Cost** | Free (local compute) | Free (local compute) | Snowflake credits |
 | **Scalability** | Single instance | Single instance | Auto-scaling |
@@ -653,7 +677,7 @@ snow sql -q "SHOW IMAGES IN IMAGE REPOSITORY CORTEX_SLACK_BOT_DB.IMAGE_SCHEMA.IM
 
 ## Project Structure
 
-```
+```text
 first-bolt-app/
 ├── app.py                                    # Main Slack bot application with enhanced message handling
 ├── cortex_chat.py                            # Snowflake Cortex Agent interaction logic
@@ -699,20 +723,23 @@ first-bolt-app/
 ### Example Queries
 
 **Data Analysis:**
-```
+
+```text
 What are our top sales regions this quarter?
 Show me customer support tickets from last week
 How many unique customers have raised a support ticket with Cellular service?
 ```
 
 **Document Search:**
-```
+
+```text
 What are the payment terms for Snowtires?
 What's the latest tire recycling policy?
 ```
 
 **Web Scraping (if enabled):**
-```
+
+```text
 What's on the homepage of https://www.snowflake.com?
 Analyze the content at https://www.example.com and summarize it
 What information can you find about product X on their website?
@@ -721,6 +748,7 @@ What information can you find about product X on their website?
 ## Features
 
 ### Core Functionality
+
 - ✅ Real-time streaming responses from Cortex Agents
 - ✅ Interactive Slack blocks with formatted output
 - ✅ Data visualization support (charts, tables)
@@ -731,6 +759,7 @@ What information can you find about product X on their website?
 - ✅ Optional web scraping capability for real-time web content analysis
 
 ### Deployment & Operations
+
 - ✅ **Docker Support**: Containerized deployment with multi-stage builds
 - ✅ **SPCS Deployment**: Run inside your Snowflake account
 - ✅ **Automated Deployment**: One-command deployment with `deploy.sh`
@@ -744,10 +773,13 @@ What information can you find about product X on their website?
 ### Local Development Issues
 
 #### Bot doesn't respond to edited messages
+
 Make sure your `app.py` includes the enhanced message handler that checks for `message_changed` subtypes.
 
 #### `uv` command not found
+
 Ensure `uv` is installed and in your PATH:
+
 ```bash
 pip install uv
 # Or reinstall via curl script
@@ -755,18 +787,23 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 #### Connection errors to Snowflake
+
 Verify your `.env` file has correct Snowflake credentials and your IP is whitelisted in Snowflake network policies.
 
 ### Docker Issues
 
 #### Build fails with platform errors
+
 Ensure you're building for linux/amd64:
+
 ```bash
 docker build --platform linux/amd64 -t cortex-slack-bot:latest .
 ```
 
 #### Container exits immediately
+
 Check logs for errors:
+
 ```bash
 ./test-local-container.sh --logs
 ```
@@ -776,6 +813,7 @@ Verify all environment variables are set correctly in `.env`.
 ### SPCS Deployment Issues
 
 #### Image push fails
+
 ```bash
 # Verify connection
 snow connection test --connection your-connection
@@ -788,6 +826,7 @@ docker login <registry-url> -u <account>/<user>
 ```
 
 #### Service won't start
+
 ```bash
 # Check compute pool is active
 snow sql -q "SHOW COMPUTE POOLS;" --connection your-connection
@@ -801,13 +840,16 @@ snow sql -q "SELECT SYSTEM\$GET_SERVICE_LOGS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.COR
 ```
 
 #### Slack connection fails in SPCS
+
 - Verify `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` in `spec.yaml`
 - Ensure external access integration is enabled
 - Check service logs for connection errors
 - Verify network rules include `slack.com:443` and `api.slack.com:443`
 
 #### Environment variables not updating
+
 After changing `spec.yaml`:
+
 ```bash
 # Re-upload spec and restart service
 ./deploy.sh --update --skip-build --connection your-connection
@@ -816,14 +858,17 @@ After changing `spec.yaml`:
 ## Cost Considerations
 
 ### Local Development
+
 - **Free** - Uses your local compute resources
 - No Snowflake credits consumed (only during Cortex Agent API calls)
 
 ### Docker Local
+
 - **Free** - Uses your local compute resources
 - No Snowflake credits consumed (only during Cortex Agent API calls)
 
 ### SPCS Deployment
+
 - **Compute Pool**: Charges based on instance family and uptime
   - `CPU_X64_XS`: ~$0.23/hour (smallest instance)
   - Auto-suspend saves costs when not in use
@@ -832,6 +877,7 @@ After changing `spec.yaml`:
 - **Data Transfer**: Minimal for Slack API calls
 
 **Cost Optimization Tips**:
+
 ```sql
 -- Suspend compute pool when not in use
 ALTER COMPUTE POOL CORTEX_SLACK_BOT_POOL SUSPEND;
@@ -844,22 +890,30 @@ SHOW SERVICES;
 SELECT SYSTEM$GET_SERVICE_STATUS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.CORTEX_SLACK_BOT_SERVICE');
 ```
 
+## TODO
+
+- [ ] **Cortex Analyst Semantic Model Migration**: Convert the cortex analyst semantic model from YAML file to semantic view creation and ensure the `CORTEX_SLACK_BOT_WH` is set as the default warehouse to get around warehouse configuration issues
+
 ## References
 
 ### Quickstart Guides
+
 - [Integrate Snowflake Cortex Agents with Slack - Official Quickstart](https://quickstarts.snowflake.com/guide/integrate_snowflake_cortex_agents_with_slack/index.html) - Complete step-by-step tutorial
 - [GitHub Repository - Original Quickstart Code](https://github.com/Snowflake-Labs/sfguide-integrate-snowflake-cortex-agents-with-slack)
 
 ### Slack Integration
+
 - [Slack Bolt for Python Quickstart Guide](https://docs.slack.dev/tools/bolt-python/getting-started/) - Official guide for Slack CLI setup and authentication
 - [Slack Bolt for Python Documentation](https://slack.dev/bolt-python/)
 
 ### Snowflake Cortex
+
 - [Snowflake Cortex Agents Documentation](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
 - [Snowflake Cortex Analyst Documentation](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst)
 - [Snowflake Cortex Search Documentation](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search)
 
 ### Snowpark Container Services
+
 - [SPCS Documentation](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/overview) - Official SPCS overview
 - [SPCS Tutorial](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/tutorial-1) - Step-by-step SPCS tutorial
 - [SPCS Specification Reference](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/specification-reference) - Service spec YAML reference
@@ -867,6 +921,7 @@ SELECT SYSTEM$GET_SERVICE_STATUS('CORTEX_SLACK_BOT_DB.APP_SCHEMA.CORTEX_SLACK_BO
 - [Cortex Cost App SPCS Example](https://github.com/sfc-gh-jkang/cortex-cost-app-spcs) - Reference implementation
 
 ### Tools
+
 - [uv Package Manager](https://github.com/astral-sh/uv)
 - [Docker Documentation](https://docs.docker.com/)
 - [Snowflake CLI on PyPI](https://pypi.org/project/snowflake-cli-labs/)
@@ -887,7 +942,9 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+```
+http://www.apache.org/licenses/LICENSE-2.0
+```
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,

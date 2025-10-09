@@ -37,7 +37,10 @@ ROLE = os.getenv("DEMO_USER_ROLE")
 WAREHOUSE = os.getenv("WAREHOUSE")
 SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
-AGENT_ENDPOINT = os.getenv("AGENT_ENDPOINT")
+# AGENT_ENDPOINT = os.getenv("AGENT_ENDPOINT")
+# Construct the Agent endpoint
+SNOWFLAKE_HOST = os.getenv("SNOWFLAKE_HOST")
+AGENT_ENDPOINT = f"https://{SNOWFLAKE_HOST}/api/v2/databases/snowflake_intelligence/schemas/agents/agents/slack_support_ai:run"
 PAT = os.getenv("PAT")
 
 # Default warehouse for SPCS deployment (fallback if WAREHOUSE not set)
@@ -727,25 +730,23 @@ def init():
     """Initialize Snowflake connection and Cortex chat."""
     conn = get_snowflake_connection()
 
-    # Determine authentication token for Cortex API calls
-    # NOTE: SPCS OAuth tokens are ONLY for internal Snowflake connections (Snowpark Session)
-    #       For Cortex Agent REST API calls, we must use PAT even when running in SPCS
+    # Check if running in SPCS
     running_in_spcs = is_running_in_spcs()
+    if running_in_spcs:
+        use_oauth = True
+        auth_token = get_oauth_token()
+    else:
+        use_oauth = False
+        auth_token = PAT
+    # Determine the current user
+    user = conn.cursor().execute("SELECT CURRENT_USER()").fetchone()[0]
+    logger.info(f"Current user: {user}")
     
-    # if running_in_spcs:
-    #     logger.info("Running in SPCS - Using oauth token for Cortex Agent API calls")
-    # else:
-    #     logger.info("Running locally - Using PAT for Cortex API calls")
-    
-    # if running_in_spcs:
-    #     auth_token = get_oauth_token()
-    #     use_oauth = True
-    # else:
-    #     auth_token = PAT
-    #     use_oauth = False
-    # Only use PAT for Cortex API calls
-    auth_token = PAT
-    use_oauth = False
+    logger.info(f"Using {auth_token} for authentication in SPCS: {running_in_spcs}")
+
+    # # Only use PAT for Cortex API calls
+    # auth_token = PAT
+    # use_oauth = False
 
     cortex_app = cortex_chat.CortexChat(
         AGENT_ENDPOINT, 

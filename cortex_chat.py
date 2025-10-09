@@ -2,6 +2,7 @@ import requests
 import json
 
 from cortex_response_parser import CortexResponseParser
+from app import get_oauth_token
 
 DEBUG = False  # Set to True for detailed logging
 
@@ -45,9 +46,9 @@ class CortexChat:
         if self.use_oauth:
             headers = {
                 "X-Snowflake-Authorization-Token-Type": "OAUTH",
-                "Authorization": f"Bearer {self.pat}",
+                "Authorization": f"Bearer {get_oauth_token()}",
                 "Content-Type": "application/json",
-                "Accept": "application/json"
+                # "Accept": "application/json"
             }
         else:
             headers = {
