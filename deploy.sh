@@ -213,7 +213,7 @@ test_local() {
         -e DEMO_USER="${DEMO_USER}" \
         -e DEMO_USER_ROLE="${DEMO_USER_ROLE}" \
         -e WAREHOUSE="${WAREHOUSE}" \
-        -e AGENT_ENDPOINT="${AGENT_ENDPOINT}" \
+        # -e AGENT_ENDPOINT="${AGENT_ENDPOINT}" \
         -e PAT="${PAT}" \
         "${IMAGE_NAME}:${IMAGE_TAG}"
 }

@@ -33,6 +33,8 @@ This project integrates [Snowflake Cortex Agents](https://docs.snowflake.com/en/
 - ✅ Search through Snowflake documentation and support tickets
 - ✅ Deploy locally, in Docker, or in Snowpark Container Services (NEW)
 - ✅ Production-ready with automated SPCS deployment (NEW)
+- ✅ **Schedule automated agent analysis with email/Slack notifications** (NEW)
+- ✅ **Send analysis results to stakeholders on CRON schedules** (NEW)
 
 Based on the [Snowflake Cortex Agents Slack Quickstart](https://github.com/Snowflake-Labs/sfguide-integrate-snowflake-cortex-agents-with-slack). For detailed step-by-step setup instructions, see the [official quickstart guide](https://quickstarts.snowflake.com/guide/integrate_snowflake_cortex_agents_with_slack/index.html).
 
@@ -106,6 +108,18 @@ Improved deployment automation and reliability:
 - **Smart Repository Detection**: Correctly extracts repository URL from SHOW commands
 - **Privilege Management**: Grants permissions to `SNOWFLAKE_INTELLIGENCE_ADMIN` role
 - **Update vs Deploy**: Separate paths for creating new services vs updating existing ones
+
+### 6. **Agent Automation & Scheduled Notifications** 🤖📧
+
+Complete automation framework for scheduled agent analysis and notifications:
+
+- **Email Integration**: Send analysis results directly via email with pre-approved recipients
+- **Slack Webhooks**: Post formatted messages to Slack channels with rich formatting
+- **Scheduled Tasks**: CRON-based agent execution for automated insights
+- **Result Queue System**: Store, track, and manage analysis results
+- **Multi-Channel Notifications**: Automatic delivery to Slack and/or email
+- **Status Tracking**: Monitor pending, sent, and failed notifications
+- **Comprehensive Documentation**: Detailed setup guide in `snowflake_scripts/README.md`
 
 ## Deployment Options
 
@@ -700,6 +714,12 @@ first-bolt-app/
 ├── slack_bot.sh                              # Shell script to start the bot locally
 ├── QUICKSTART.md                             # Quick reference guide (NEW)
 │
+├── snowflake_scripts/                        # Agent automation and notification tools (NEW)
+│   ├── README.md                             # Detailed documentation for automation setup
+│   ├── agent_email_tool.sql                  # Email notification integration setup
+│   ├── agent_slack_tool.sql                  # Slack webhook integration setup
+│   └── setup_agent_schedule.sql              # Scheduled agent tasks and result queue
+│
 ├── data/                                     # Sample data and documents
 │   ├── *.pdf                                 # Sample PDF documents for Cortex Search
 │   └── ...                                   # Contract and policy documents
@@ -711,6 +731,92 @@ first-bolt-app/
 ├── .env                                      # Your actual environment variables (not tracked in git)
 └── README.md                                 # This file
 ```
+
+## 🤖 Agent Automation & Scheduled Notifications
+
+Beyond the interactive Slack bot, this project includes comprehensive automation capabilities for scheduled agent analysis and notifications.
+
+### Overview
+
+The `snowflake_scripts/` directory contains SQL scripts that enable:
+
+- **📧 Email Integration**: Send analysis results directly via email
+- **💬 Slack Notifications**: Post formatted messages to Slack channels via webhooks
+- **⏰ Scheduled Analysis**: Run Cortex Agent analysis on a schedule (CRON-based)
+- **📊 Result Queue System**: Store and manage agent analysis results
+- **🔄 Automated Delivery**: Automatically send pending results to Slack/email
+
+### Quick Start
+
+```sql
+-- 1. Setup email tool (optional)
+-- Execute: snowflake_scripts/agent_email_tool.sql
+
+-- 2. Setup Slack webhook (required for scheduled notifications)
+-- Execute: snowflake_scripts/agent_slack_tool.sql
+
+-- 3. Setup scheduled agent tasks
+-- Execute: snowflake_scripts/setup_agent_schedule.sql
+```
+
+### Use Cases
+
+✅ **Daily Reports**: Schedule agent to analyze support tickets every morning and post to Slack  
+✅ **Weekly Summaries**: Generate weekly sales analysis and email to stakeholders  
+✅ **Real-time Alerts**: Detect data quality issues and notify via Slack immediately  
+✅ **Automated Dashboards**: Regular updates posted to team channels with key metrics
+
+### Key Features
+
+- **Scheduled Tasks**: Use Snowflake Tasks with CRON expressions
+  - Example: `CRON 0 9 * * * EST` (Daily at 9 AM EST)
+  - `CRON */15 * * * * EST` (Every 15 minutes)
+
+- **Result Queue**: Decouples analysis execution from notification delivery
+  - Store results with status tracking (PENDING, SENT, FAILED)
+  - Retry failed notifications
+  - Archive old results
+
+- **Multi-Channel Notifications**:
+  - Email with customizable recipients
+  - Slack with rich formatting (emojis, markdown)
+  - Extensible to other channels
+
+### Example Workflow
+
+```
+1. Task triggers daily at 9 AM
+2. Calls Cortex Agent: "Analyze support tickets by service type"
+3. Stores results in AGENT_RESULTS_QUEUE (status: PENDING)
+4. Notification task (runs every 15 min) picks up pending results
+5. Sends formatted message to Slack channel
+6. Updates status to SENT
+```
+
+### Documentation
+
+For detailed setup instructions, troubleshooting, and examples, see:
+
+📚 **[snowflake_scripts/README.md](snowflake_scripts/README.md)** - Complete automation guide
+
+### Sample Slack Notification
+
+```
+🔔 Customer Support Tickets by Service Type
+
+📊 Summary: 
+Cellular: 1,234 tickets (65%)
+Business Internet: 678 tickets (35%)
+
+Top Issues:
+• Network connectivity (45%)
+• Billing inquiries (30%)
+• Service activation (25%)
+
+⏰ Generated: 2025-11-07 09:00:00
+```
+
+---
 
 ## Usage
 
@@ -767,6 +873,16 @@ What information can you find about product X on their website?
 - ✅ **Service Monitoring**: Built-in status checks and log viewing
 - ✅ **Auto-scaling**: SPCS compute pool auto-resume/suspend
 - ✅ **Secure**: Snowflake-managed credentials and external access integration
+
+### Agent Automation (NEW)
+
+- ✅ **Scheduled Analysis**: Run Cortex Agent on CRON schedules for automated insights
+- ✅ **Email Notifications**: Send analysis results via email to pre-approved recipients
+- ✅ **Slack Webhooks**: Post formatted messages directly to Slack channels
+- ✅ **Result Queue System**: Store, track, and manage agent analysis results
+- ✅ **Multi-Channel Delivery**: Automatically dispatch results to Slack and/or email
+- ✅ **Task Management**: Snowflake Tasks for reliable scheduled execution
+- ✅ **Status Tracking**: Monitor pending, sent, and failed notifications
 
 ## Troubleshooting
 
